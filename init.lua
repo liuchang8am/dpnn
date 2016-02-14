@@ -37,6 +37,9 @@ unpack = unpack or table.unpack -- lua 5.2 compat
 -- for testing:
 torch.include('dpnn', 'test.lua')
 
+-- for debugging
+torch.include('dpnn', 'Debug.lua')
+
 -- extensions to existing modules
 torch.include('dpnn', 'Module.lua')
 torch.include('dpnn', 'Container.lua')
