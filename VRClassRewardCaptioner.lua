@@ -20,17 +20,19 @@ end
 
 function VRClassRewardCaptioner:updateOutput(input, target)
    assert(torch.type(input) == 'table')
+   input_backup = input
    local input = self:toBatch(input[1], 1)
    self._maxVal = self._maxVal or input.new()
    self._maxIdx = self._maxIdx or torch.type(input) == 'torch.CudaTensor' and input.new() or torch.LongTensor()
    
    -- max class value is class prediction
    self._maxVal:max(self._maxIdx, input, 2)
-   if torch.type(self._maxIdx) ~= torch.type(target) then
-      self._target = self._target or self._maxIdx.new()
-      self._target:resize(target:size()):copy(target)
-      target = self._target
-   end
+   --print (self._maxVal)
+   --if torch.type(self._maxIdx) ~= torch.type(target) then
+   --   self._target = self._target or self._maxIdx.new()
+   --  self._target:resize(target:size()):copy(target)
+   --   target = self._target
+   --end
    
    -- reward = scale when correctly classified
    self._reward = self._maxIdx.new()
