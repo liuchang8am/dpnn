@@ -8,7 +8,7 @@ function Debug:__init()
   self.vocab = ds._flickr8k[4]
 end
 
---function Debug:updateOutput(inputTable) -- debug GlimpseSensor
+function Debug:updateOutput(inputTable) -- debug GlimpseSensor
 --    print ("updateOutput for Debug")
 --    print (torch.type(inputTable))
 --    print (inputTable:size())
@@ -18,8 +18,8 @@ end
 --    image.save(filepath, display)
 --    step = step + 1
 --    io.read(1)
---    return inputTable
---end
+    return inputTable
+end
 
 function Debug:updateOutput(inputTable) -- debug LogSoftMax
   --print ("updateOutput for Debug")

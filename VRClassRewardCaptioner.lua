@@ -17,6 +17,7 @@ function VRClassRewardCaptioner:__init(module, scale, criterion)
     self.sizeAverage = true
     self.gradInput = { torch.Tensor() }
     self.reward = {} -- 5 is batch size
+    self.debug = true
 end
 
 function VRClassRewardCaptioner:updateOutput(input, target)
@@ -24,10 +25,10 @@ function VRClassRewardCaptioner:updateOutput(input, target)
     
     local reward = 0
     for i = 1, #input do
-	local _maxVal
+        local _maxVal
         local _maxIdx
-	_maxVal, _maxIdx = torch.max(input[i][1], 2)
-	reward = reward + torch.eq(_maxIdx, target[i])[1][1]
+        _maxVal, _maxIdx = torch.max(input[i][1], 2)
+        reward = reward + torch.eq(_maxIdx, target[i])[1][1]
     end
     reward = reward * self.scale
     self.output = -reward
@@ -36,6 +37,13 @@ function VRClassRewardCaptioner:updateOutput(input, target)
     if self.sizeAverage then
         self.output = self.output / #input
     end
+
+    if self.debug then 
+	self.output = 0
+	print ("VRClassReward:", self.output)
+    	return self.output
+    end
+    print ("VRClassReward:", self.output)
     return self.output
 end
 
@@ -44,12 +52,9 @@ function VRClassRewardCaptioner:updateGradInput(inputTable, target)
     local batch_size = target:size(2)
     local timestep = #inputTable
     local hidden_size = inputTable[1][1]:size(2)
-    --print ("hidden_size:", hidden_size)
-    --print ("timestep:", timestep)
-    --print ("batch_size", batch_size)
     local reward = torch.Tensor(batch_size) -- 1 x batch
     for i = 1, batch_size do 
-	reward[i] = self.reward[i]
+        reward[i] = self.reward[i]
     end
     --print ("reward:", reward)
     self.vrReward = reward
@@ -67,13 +72,22 @@ function VRClassRewardCaptioner:updateGradInput(inputTable, target)
 
     self.gradInput = {}
     for i = 1, timestep do 
-	local gradInput_item  = {}
+        local gradInput_item  = {}
         gradInput_item[1] = torch.Tensor(batch_size, hidden_size):fill(0)
-	gradInput_item[2] = self.criterion:backward(baseline, reward)
-	table.insert(self.gradInput, gradInput_item)
+        gradInput_item[2] = self.criterion:backward(baseline, reward)
+        table.insert(self.gradInput, gradInput_item)
     end
     self.reward = {} -- reset
+    if self.debug then 
+	for k,v in pairs(self.gradInput) do 
+	    v[1]:fill(0)
+	    v[2]:fill(0)
+	end
+
+    	return self.gradInput
+    end
     return self.gradInput
+    
 end
 
 function VRClassRewardCaptioner:type(type)
